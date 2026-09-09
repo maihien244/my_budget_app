@@ -4,44 +4,30 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.tooling.preview.Preview
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.mybudget.data.local.AppDatabase
+import com.example.mybudget.data.repository.ExpenseRepository
+import com.example.mybudget.data.repository.UserPreferencesRepository
+import com.example.mybudget.ui.navigation.AppNavigation
 import com.example.mybudget.ui.theme.MyBudgetTheme
+import com.example.mybudget.viewmodel.ExpenseViewModel
+import com.example.mybudget.viewmodel.ExpenseViewModelFactory
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
+
+        val db = AppDatabase.getDatabase(applicationContext)
+        val repository = ExpenseRepository(db.expenseDao())
+        val preferencesRepository = UserPreferencesRepository(applicationContext)
+        val factory = ExpenseViewModelFactory(repository, preferencesRepository)
+
         setContent {
             MyBudgetTheme {
-                Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-                    Greeting(
-                        name = "Android",
-                        modifier = Modifier.padding(innerPadding)
-                    )
-                }
+                val viewModel: ExpenseViewModel = viewModel(factory = factory)
+                AppNavigation(viewModel = viewModel)
             }
         }
-    }
-}
-
-@Composable
-fun Greeting(name: String, modifier: Modifier = Modifier) {
-    Text(
-        text = "Hello $name!",
-        modifier = modifier
-    )
-}
-
-@Preview(showBackground = true)
-@Composable
-fun GreetingPreview() {
-    MyBudgetTheme {
-        Greeting("Android")
     }
 }
